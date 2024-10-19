@@ -1,17 +1,18 @@
 // src/app/page.tsx
-"use client"; // Add this line to make the component a Client Component
+"use client";
 
 import React, { useState } from 'react';
+import WarScreen from './war'; // Import WarScreen component
 import { PublicKey } from '@solana/web3.js'; // Import Solana's PublicKey class for validation
 
 const Home: React.FC = () => {
-  const [started, setStarted] = useState<boolean>(false); // State to track if "Let's Get Started" is clicked
+  const [screen, setScreen] = useState<'start' | 'main' | 'war'>('start');
   const [token1Address, setToken1Address] = useState<string>('');
   const [token2Address, setToken2Address] = useState<string>('');
   const [token1Error, setToken1Error] = useState<string | null>(null);
   const [token2Error, setToken2Error] = useState<string | null>(null);
   const [selectedDuration, setSelectedDuration] = useState<string>('8 Hours');
-  const [apiResponse, setApiResponse] = useState<string | null>(null); // State for API response
+  const [apiResponse, setApiResponse] = useState<string | null>(null);
 
   const durations = [
     '1 Hour',
@@ -79,16 +80,26 @@ const Home: React.FC = () => {
     token2Error !== null;
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
-      {/* Conditional rendering based on whether the "Let's Get Started" button was clicked */}
-      {!started ? (
-        <button
-          onClick={() => setStarted(true)}
-          className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700"
-        >
-          Let's Get Started
-        </button>
-      ) : (
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4">
+      {/* Conditional rendering based on the current screen */}
+      {screen === 'start' && (
+        <div className="space-x-4">
+          <button
+            onClick={() => setScreen('main')}
+            className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700"
+          >
+            Let's Get Started
+          </button>
+          <button
+            onClick={() => setScreen('war')}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Go to War
+          </button>
+        </div>
+      )}
+
+      {screen === 'main' && (
         <div className="w-full max-w-md bg-gray-900 text-white p-6 rounded-lg">
           {/* Main form section */}
           <form className="space-y-4">
@@ -165,6 +176,8 @@ const Home: React.FC = () => {
           </form>
         </div>
       )}
+
+      {screen === 'war' && <WarScreen />}
     </div>
   );
 };
