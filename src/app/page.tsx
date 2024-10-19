@@ -3,10 +3,11 @@
 
 import React, { useState } from 'react';
 import WarScreen from './war'; // Import WarScreen component
+import MemeWarScreen from './memeWar'; // Import MemeWarScreen component
 import { PublicKey } from '@solana/web3.js'; // Import Solana's PublicKey class for validation
 
 const Home: React.FC = () => {
-  const [screen, setScreen] = useState<'start' | 'main' | 'war'>('start');
+  const [screen, setScreen] = useState<'start' | 'main' | 'war' | 'memeWar'>('start');
   const [token1Address, setToken1Address] = useState<string>('');
   const [token2Address, setToken2Address] = useState<string>('');
   const [token1Error, setToken1Error] = useState<string | null>(null);
@@ -96,6 +97,12 @@ const Home: React.FC = () => {
           >
             Go to War
           </button>
+          <button
+            onClick={() => setScreen('memeWar')}
+            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          >
+            Meme War
+          </button>
         </div>
       )}
 
@@ -178,6 +185,8 @@ const Home: React.FC = () => {
       )}
 
       {screen === 'war' && <WarScreen />}
+
+      {screen === 'memeWar' && <MemeWarScreen />}
     </div>
   );
 };
