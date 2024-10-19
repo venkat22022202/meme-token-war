@@ -1,101 +1,172 @@
-import Image from "next/image";
+// src/app/page.tsx
+"use client"; // Add this line to make the component a Client Component
 
-export default function Home() {
+import React, { useState } from 'react';
+import { PublicKey } from '@solana/web3.js'; // Import Solana's PublicKey class for validation
+
+const Home: React.FC = () => {
+  const [started, setStarted] = useState<boolean>(false); // State to track if "Let's Get Started" is clicked
+  const [token1Address, setToken1Address] = useState<string>('');
+  const [token2Address, setToken2Address] = useState<string>('');
+  const [token1Error, setToken1Error] = useState<string | null>(null);
+  const [token2Error, setToken2Error] = useState<string | null>(null);
+  const [selectedDuration, setSelectedDuration] = useState<string>('8 Hours');
+  const [apiResponse, setApiResponse] = useState<string | null>(null); // State for API response
+
+  const durations = [
+    '1 Hour',
+    '2 Hours',
+    '8 Hours',
+    '12 Hours',
+    '16 Hours',
+    '24 Hours',
+    '36 Hours',
+    '48 Hours',
+  ];
+
+  const handleDurationChange = (duration: string) => {
+    setSelectedDuration(duration);
+  };
+
+  const validateSolanaAddress = (address: string): boolean => {
+    try {
+      new PublicKey(address); // This will throw an error if the address is invalid
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  const handleToken1Change = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const address = e.target.value;
+    setToken1Address(address);
+    let error = null;
+    if (!validateSolanaAddress(address)) {
+      error = 'Invalid Solana public key';
+    } else if (address === token2Address) {
+      error = 'Token 1 and Token 2 addresses must be different';
+    }
+    setToken1Error(error);
+
+    // Make an API call after the address is verified and there is no error
+    if (!error) {
+      try {
+        const response = await fetch('/api/hello');
+        const data = await response.json();
+        setApiResponse(data.message); // Set the API response message
+      } catch (err) {
+        console.error('Error calling API:', err);
+      }
+    }
+  };
+
+  const handleToken2Change = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const address = e.target.value;
+    setToken2Address(address);
+    let error = null;
+    if (!validateSolanaAddress(address)) {
+      error = 'Invalid Solana public key';
+    } else if (address === token1Address) {
+      error = 'Token 1 and Token 2 addresses must be different';
+    }
+    setToken2Error(error);
+  };
+
+  const isSubmitDisabled =
+    !token1Address ||
+    !token2Address ||
+    token1Error !== null ||
+    token2Error !== null;
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
+      {/* Conditional rendering based on whether the "Let's Get Started" button was clicked */}
+      {!started ? (
+        <button
+          onClick={() => setStarted(true)}
+          className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700"
+        >
+          Let's Get Started
+        </button>
+      ) : (
+        <div className="w-full max-w-md bg-gray-900 text-white p-6 rounded-lg">
+          {/* Main form section */}
+          <form className="space-y-4">
+            <div>
+              <label className="block mb-2">>token 1 contract address</label>
+              <input
+                type="text"
+                value={token1Address}
+                onChange={handleToken1Change}
+                className={`w-full p-2 bg-gray-900 text-white border ${
+                  token1Error ? 'border-red-600' : 'border-green-600'
+                } rounded-lg focus:outline-none`}
+              />
+              {token1Error && <p className="text-red-600 text-sm mt-1">{token1Error}</p>}
+            </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            <div>
+              <label className="block mb-2">>token 2 contract address</label>
+              <input
+                type="text"
+                value={token2Address}
+                onChange={handleToken2Change}
+                className={`w-full p-2 bg-gray-900 text-white border ${
+                  token2Error ? 'border-red-600' : 'border-green-600'
+                } rounded-lg focus:outline-none`}
+              />
+              {token2Error && <p className="text-red-600 text-sm mt-1">{token2Error}</p>}
+            </div>
+
+            <div>
+              <label className="block mb-2">>token war duration</label>
+              <div className="flex flex-wrap gap-2">
+                {durations.map((duration) => (
+                  <button
+                    key={duration}
+                    type="button"
+                    onClick={() => handleDurationChange(duration)}
+                    className={`px-4 py-2 rounded-lg ${
+                      selectedDuration === duration
+                        ? 'bg-red-600 text-white'
+                        : 'bg-gray-800 text-gray-400'
+                    }`}
+                  >
+                    {duration}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block mb-2">>token deposit bonus - 0.5%</label>
+            </div>
+
+            <div>
+              <button
+                type="submit"
+                className={`w-full py-3 rounded-lg ${
+                  isSubmitDisabled
+                    ? 'bg-gray-600 cursor-not-allowed'
+                    : 'bg-red-600 hover:bg-red-700'
+                } text-white`}
+                disabled={isSubmitDisabled}
+              >
+                Create token war
+              </button>
+            </div>
+
+            <p className="text-xs mt-4 text-center">
+              If your token war successfully completes risk-free bond you will
+              receive 0.5 SOL as a reward
+            </p>
+
+            {apiResponse && <p className="mt-4 text-green-500">{apiResponse}</p>}
+          </form>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      )}
     </div>
   );
-}
+};
+
+export default Home;
