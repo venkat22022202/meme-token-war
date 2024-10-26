@@ -2,12 +2,12 @@
 "use client";
 
 import React, { useState } from 'react';
-import WarScreen from './war'; // Import WarScreen component
-import MemeWarScreen from './memeWar'; // Import MemeWarScreen component
-import { PublicKey } from '@solana/web3.js'; // Import Solana's PublicKey class for validation
+import WarScreen from './war';
+import MemeWarScreen from './memeWar';
+import { PublicKey } from '@solana/web3.js';
 
 const Home: React.FC = () => {
-  const [screen, setScreen] = useState<'start' | 'main' | 'war' | 'memeWar'>('start');
+  const [screen, setScreen] = useState<'main' | 'war' | 'memeWar'>('main');
   const [token1Address, setToken1Address] = useState<string>('');
   const [token2Address, setToken2Address] = useState<string>('');
   const [token1Error, setToken1Error] = useState<string | null>(null);
@@ -16,25 +16,17 @@ const Home: React.FC = () => {
   const [apiResponse, setApiResponse] = useState<string | null>(null);
 
   const durations = [
-    '1 Hour',
-    '2 Hours',
-    '8 Hours',
-    '12 Hours',
-    '16 Hours',
-    '24 Hours',
-    '36 Hours',
-    '48 Hours',
-  ];
+    '1 Hour', '2 Hours', '8 Hours', '12 Hours', '16 Hours',
+    '24 Hours', '36 Hours', '48 Hours'
+  ];  
 
-  const handleDurationChange = (duration: string) => {
-    setSelectedDuration(duration);
-  };
+  const handleDurationChange = (duration: string) => setSelectedDuration(duration);
 
   const validateSolanaAddress = (address: string): boolean => {
     try {
-      new PublicKey(address); // This will throw an error if the address is invalid
+      new PublicKey(address);
       return true;
-    } catch (e) {
+    } catch {
       return false;
     }
   };
@@ -42,20 +34,18 @@ const Home: React.FC = () => {
   const handleToken1Change = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const address = e.target.value;
     setToken1Address(address);
-    let error = null;
-    if (!validateSolanaAddress(address)) {
-      error = 'Invalid Solana public key';
-    } else if (address === token2Address) {
-      error = 'Token 1 and Token 2 addresses must be different';
-    }
+    let error = !validateSolanaAddress(address)
+      ? 'Invalid Solana public key'
+      : address === token2Address
+      ? 'Token 1 and Token 2 addresses must be different'
+      : null;
     setToken1Error(error);
 
-    // Make an API call after the address is verified and there is no error
     if (!error) {
       try {
         const response = await fetch('/api/hello');
         const data = await response.json();
-        setApiResponse(data.message); // Set the API response message
+        setApiResponse(data.message);
       } catch (err) {
         console.error('Error calling API:', err);
       }
@@ -65,50 +55,49 @@ const Home: React.FC = () => {
   const handleToken2Change = (e: React.ChangeEvent<HTMLInputElement>) => {
     const address = e.target.value;
     setToken2Address(address);
-    let error = null;
-    if (!validateSolanaAddress(address)) {
-      error = 'Invalid Solana public key';
-    } else if (address === token1Address) {
-      error = 'Token 1 and Token 2 addresses must be different';
-    }
+    let error = !validateSolanaAddress(address)
+      ? 'Invalid Solana public key'
+      : address === token1Address
+      ? 'Token 1 and Token 2 addresses must be different'
+      : null;
     setToken2Error(error);
   };
 
-  const isSubmitDisabled =
-    !token1Address ||
-    !token2Address ||
-    token1Error !== null ||
-    token2Error !== null;
+  const isSubmitDisabled = !token1Address || !token2Address || token1Error || token2Error;
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4">
-      {/* Conditional rendering based on the current screen */}
-      {screen === 'start' && (
-        <div className="space-x-4">
-          <button
-            onClick={() => setScreen('main')}
-            className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700"
-          >
-            Let's Get Started
-          </button>
-          <button
-            onClick={() => setScreen('war')}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-          >
-            Go to War
-          </button>
-          <button
-            onClick={() => setScreen('memeWar')}
-            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700"
-          >
-            Meme War
-          </button>
-        </div>
-      )}
+    <div className="min-h-screen bg-black text-white flex flex-col items-center p-4">
+      {/* Navigation Bar */}
+      <nav className="w-full max-w-3xl flex justify-around py-4 mb-6 bg-gray-800 rounded-lg shadow-lg">
+        <button
+          onClick={() => setScreen('main')}
+          className={`px-4 py-2 rounded ${
+            screen === 'main' ? 'bg-red-600 text-white' : 'text-gray-400'
+          } hover:bg-red-700 transition`}
+        >
+          Main
+        </button>
+        <button
+          onClick={() => setScreen('war')}
+          className={`px-4 py-2 rounded ${
+            screen === 'war' ? 'bg-blue-600 text-white' : 'text-gray-400'
+          } hover:bg-blue-700 transition`}
+        >
+          War
+        </button>
+        <button
+          onClick={() => setScreen('memeWar')}
+          className={`px-4 py-2 rounded ${
+            screen === 'memeWar' ? 'bg-green-600 text-white' : 'text-gray-400'
+          } hover:bg-green-700 transition`}
+        >
+          Meme War
+        </button>
+      </nav>
 
+      {/* Conditional rendering based on the current screen */}
       {screen === 'main' && (
         <div className="w-full max-w-md bg-gray-900 text-white p-6 rounded-lg">
-          {/* Main form section */}
           <form className="space-y-4">
             <div>
               <label className="block mb-2">>token 1 contract address</label>
@@ -185,7 +174,6 @@ const Home: React.FC = () => {
       )}
 
       {screen === 'war' && <WarScreen />}
-
       {screen === 'memeWar' && <MemeWarScreen />}
     </div>
   );
